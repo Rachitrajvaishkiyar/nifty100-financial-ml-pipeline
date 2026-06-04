@@ -1,49 +1,45 @@
-import logging
-import random
-from celery import shared_task
+import os
+import json
+from datetime import datetime
 from django.db import connection
 
-logger = logging.getLogger(__name__)
-
-@shared_task(name="dashboard.tasks.run_automated_financial_pipeline")
-def run_automated_financial_pipeline():
+def generate_daily_pipeline_report():
     """
-    Automated Background Task: Runs nightly to refresh machine learning
-    health scores and audit outlier metrics on autopilot without freezing the UI.
+    Assembles a corporate daily audit report capturing pipeline statistics, 
+    ML execution health metrics, and database anomalies.
     """
-    logger.info("⚡ Starting Automated Financial Analytics Background Pipeline...")
+    report_date = datetime.now().strftime("%Y-%m-%d")
     
-    try:
-        with connection.cursor() as cursor:
-            # 1. Fetch current companies in the warehouse
-            cursor.execute("SELECT symbol FROM dim_company;")
-            rows = cursor.fetchall()
-            
-            if not rows:
-                logger.warning("⚠️ No corporate entities found in warehouse table. Skipping scoring run.")
-                return "Pipeline skipped: Empty dim_company table."
-                
-            symbols = [row[0] for row in rows]
-            logger.info(f"📋 Loaded {len(symbols)} corporate symbols for ML scoring recalculation.")
-            
-            # 2. Simulate the Notebook 2 metric engine matrix run for the database records
-            for symbol in symbols:
-                simulated_ml_score = round(random.uniform(45.0, 95.0), 1)
-                
-                if simulated_ml_score >= 85:
-                    label = "EXCELLENT"
-                elif simulated_ml_score >= 70:
-                    label = "GOOD"
-                elif simulated_ml_score >= 50:
-                    label = "AVERAGE"
-                else:
-                    label = "WEAK"
-                
-                logger.info(f"💾 Updated {symbol} -> Score: {simulated_ml_score} ({label})")
-                
-        logger.info("✅ Automated background analytics processing complete.")
-        return f"Successfully processed {len(symbols)} corporate profiles."
+    with connection.cursor() as cursor:
+        # 1. Fetch performance counts for the day
+        cursor.execute("SELECT COUNT(*) FROM fact_ml_scores;")
+        total_companies_scored = cursor.fetchone()[0]
         
-    except Exception as e:
-        logger.error(f"❌ Critical breakdown in automated tasks pipeline: {str(e)}")
-        return f"Pipeline failed: {str(e)}"
+        # 2. Extract health breakdown
+        cursor.execute("SELECT COUNT(*) FROM fact_ml_scores WHERE health_label = 'EXCELLENT';")
+        excellent_count = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM fact_ml_scores WHERE health_label IN ('WEAK', 'POOR');")
+        attention_count = cursor.fetchone()[0]
+        
+    # Assemble structured JSON log payload
+    report_payload = {
+        "report_identifier": f"RE-DAILY-{report_date}",
+        "timestamp": datetime.now().isoformat(),
+        "metrics": {
+            "total_records_processed": total_companies_scored,
+            "excellent_health_assets": excellent_count,
+            "attention_required_assets": attention_count
+        },
+        "system_status": "HEALTHY" if attention_count < 15 else "WARNING"
+    }
+    
+    # Write to local tracking repository
+    report_dir = "data/daily_reports/"
+    os.makedirs(report_dir, exist_ok=True)
+    
+    report_filename = f"{report_dir}report_{report_date}.json"
+    with open(report_filename, "w") as f:
+        json.dump(report_payload, f, indent=4)
+        
+    print(f"✅ Daily Audit Report successfully compiled and exported to: {report_filename}")
