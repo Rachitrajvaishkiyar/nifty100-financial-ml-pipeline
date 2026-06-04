@@ -1,0 +1,21 @@
+# Python bytecode cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Local virtual environments
+venv/
+.venv/
+env/
+
+# Mac system files
+.DS_Store
+
+# Local SQLite databases or credentials
+db.sqlite3
+*.env
