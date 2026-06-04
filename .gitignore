@@ -18,4 +18,4 @@ env/
 
 # Local SQLite databases or credentials
 db.sqlite3
-*.env
+*.env*.pdf
