@@ -1,0 +1,22 @@
+from django.db import migrations
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('dashboard', '0003_previous_migration_name'), # This name is auto-filled by Django
+    ]
+
+    operations = [
+        migrations.RunSQL(
+            sql="""
+            CREATE INDEX IF NOT EXISTS idx_fact_pl_company_year ON fact_profit_loss (company_id, year_id);
+            CREATE INDEX IF NOT EXISTS idx_fact_ml_scores_label ON fact_ml_scores (health_label);
+            CREATE INDEX IF NOT EXISTS idx_fact_analysis_metric ON fact_analysis (company_id, metric_label);
+            """,
+            reverse_sql="""
+            DROP INDEX IF EXISTS idx_fact_pl_company_year;
+            DROP INDEX IF EXISTS idx_fact_ml_scores_label;
+            DROP INDEX IF EXISTS idx_fact_analysis_metric;
+            """
+        ),
+    ]

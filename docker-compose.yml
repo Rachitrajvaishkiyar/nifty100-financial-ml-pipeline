@@ -5,13 +5,35 @@ services:
     image: postgres:15
     container_name: b100_postgres_warehouse
     environment:
-      POSTGRES_USER: bluestock_user
-      POSTGRES_PASSWORD: bluestock_password
       POSTGRES_DB: b100_warehouse
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_secure_password
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: .
+    command: celery -A bluestock_project worker --loglevel=info
+    depends_on:
+      - db
+      - redis
 
 volumes:
-  postgres_data:
+  pgdata:
