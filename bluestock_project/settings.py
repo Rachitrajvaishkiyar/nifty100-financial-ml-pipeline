@@ -20,11 +20,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Reads SECRET_KEY from environment, drops back to a default fallback ONLY for safety
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-$_r60g+00(9zwkm9))bxnbybmh=axpbot19o3iv#2t+z+y11(j')
 
-# DEBUG is True locally, but must be False in production
-DEBUG = env.bool('DEBUG', default=True)
+# Force DEBUG to False in production unless explicitly set to True locally via .env
+DEBUG = env.bool('DEBUG', default=False)
 
-# Allows your local machine and your future deployment domains
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['127.0.0.1', 'localhost'])
+# Wide-open wildcard lets Render domains access your platform seamlessly
+ALLOWED_HOSTS = ['*']
 
 # --- APPLICATION DEFINITION ---
 INSTALLED_APPS = [
