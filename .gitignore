@@ -19,3 +19,6 @@ env/
 # Local SQLite databases or credentials
 db.sqlite3
 *.env*.pdf
+
+.env
+
