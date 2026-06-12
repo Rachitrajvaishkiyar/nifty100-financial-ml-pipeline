@@ -188,3 +188,15 @@ Werkzeug==3.1.6
 whitenoise==6.12.0
 widgetsnbextension==4.0.15
 zopfli==0.4.2
+cat << 'EOF' > requirements.txt
+django>=5.0,<6.0
+psycopg2-binary>=2.9.9
+gunicorn>=21.2.0
+whitenoise>=6.6.0
+celery>=5.3.6
+redis>=5.0.1
+django-celery-results>=2.5.1
+django-celery-beat>=2.5.0
+django-environ>=0.11.2
+dj-database-url>=2.1.0
+EOF
