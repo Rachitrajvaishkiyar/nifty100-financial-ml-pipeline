@@ -75,11 +75,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bluestock_project.wsgi.application'
 
 # --- DATABASE CONFIGURATION ---
-# In production, it parses DATABASE_URL from your cloud Postgres container.
-# If unavailable (like on your MacBook Air), it defaults right back to your local Docker container.
+# Safely handles fallbacks across local and containerized database clusters
 DATABASES = {
     'default': dj_database_url.config(
-        default=env('DATABASE_URL', default='postgresql://bluestock_user:bluestock_password@localhost:5432/b100_warehouse')
+        default=os.environ.get('DATABASE_URL', 'postgresql://bluestock_user:bluestock_password@localhost:5432/b100_warehouse')
     )
 }
 
@@ -100,10 +99,11 @@ USE_TZ = True
 # --- STATIC FILES ASSETS MANAGEMENT ---
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-# Optimizes static asset delivery compressing files
+
+# Swapped to standard CompressedStaticFilesStorage to stop manifest 500 runtime compilation crashes
 STORAGES = {
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
